@@ -21,6 +21,7 @@ typedef node_t **list_t;
 
 list_t list_create() {
   list_t list = malloc(sizeof(node_t *));
+  *list = NULL; // Originally leaving this out caused me some hard-to-find problems.
   return list;
 }
 
@@ -40,7 +41,7 @@ void list_destroy(list_t list) {
     node_destroy(head);
     head = next;
   }
-  free(*list);
+  free(list);
   list = NULL;
 }
 
@@ -118,7 +119,7 @@ uint list_length(list_t list) {
 
 
 bool is_empty(list_t list) {
-  return *list == NULL;
+  return list_length(list) == 0;
 }
 
 
@@ -135,6 +136,7 @@ void test_insert_first_element() {
   list_insert(list, 0, 1);
   assert((*list)->content == 1);
   assert(list_length(list) == 1);
+  list_destroy(list);
 }
 
 
@@ -147,6 +149,7 @@ void test_insert_multiple_elements_front() {
   assert((*list)->next->content == 2);
   assert((*list)->next->next->content == 1);
   assert(list_length(list) == 3);
+  list_destroy(list);
 }
 
 
@@ -159,6 +162,7 @@ void test_insert_multiple_elements_back() {
   assert((*list)->next->content == 2);
   assert((*list)->next->next->content == 3);
   assert(list_length(list) == 3);
+  list_destroy(list);
 }
 
 
@@ -175,6 +179,7 @@ void test_insert_elements_mid() {
   assert((*list)->next->next->next->content == 4);
   assert((*list)->next->next->next->next->content == 5);
   assert(list_length(list) == 5);
+  list_destroy(list);
 }
 
 
@@ -183,17 +188,17 @@ void test_remove_single_element() {
   list_insert(list, 0, 1);
   list_remove(list, 0);
   assert(is_empty(list));
+  list_destroy(list);
 }
 
 
 void test_remove_multiple_element() {
-  /* list_t l = list_create(); */
-  /* list_t li = list_create(); */
-  /* list_t lis = list_create(); */
   list_t list = list_create();
   list_insert(list, 0, 1);
   list_remove(list, 0);
+  assert(list_length(list) == 0);
   assert(is_empty(list));
+  list_destroy(list);
 }
 
 
@@ -205,6 +210,7 @@ void test_get_item() {
   assert(get_item(list, 0) == 1);
   assert(get_item(list, 1) == 2);
   assert(get_item(list, 2) == 3);
+  list_destroy(list);
 }
 
 
@@ -214,6 +220,7 @@ int main(int argc, char **argv) {
   test_insert_multiple_elements_front();
   test_insert_multiple_elements_back();
   test_insert_elements_mid();
+  test_remove_single_element();
   test_remove_single_element();
   test_remove_multiple_element();
   test_get_item();
