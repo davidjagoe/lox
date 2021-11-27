@@ -192,16 +192,6 @@ void test_remove_single_element() {
 }
 
 
-void test_remove_multiple_element() {
-  list_t list = list_create();
-  list_insert(list, 0, 1);
-  list_remove(list, 0);
-  assert(list_length(list) == 0);
-  assert(is_empty(list));
-  list_destroy(list);
-}
-
-
 void test_get_item() {
   list_t list = list_create();
   list_insert(list, 0, 1);
@@ -214,6 +204,21 @@ void test_get_item() {
 }
 
 
+void test_remove_multiple_element() {
+  list_t list = list_create();
+  list_insert(list, 0, 1);
+  list_insert(list, 1, 2);
+  list_insert(list, 2, 3);
+  list_insert(list, 3, 4);
+  list_insert(list, 4, 5);
+  list_remove(list, 2);
+  list_remove(list, 2);
+  assert(get_item(list, 2) == 5);
+  assert(list_length(list) == 3);
+  list_destroy(list);
+}
+
+
 int main(int argc, char **argv) {
   test_create_empty_list();
   test_insert_first_element();
@@ -222,7 +227,7 @@ int main(int argc, char **argv) {
   test_insert_elements_mid();
   test_remove_single_element();
   test_remove_single_element();
-  test_remove_multiple_element();
   test_get_item();
+  test_remove_multiple_element();
   return 0;
 }
