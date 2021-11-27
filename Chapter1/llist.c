@@ -8,9 +8,10 @@
 
 // int MAXLEN = pow(2, sizeof(uint) * 8) - 1; // How to do this at comptime?
 
+typedef int item;
 
 struct node {
-  int content;
+  item content;
   struct node *next;
 };
 
@@ -39,12 +40,12 @@ void list_destroy(list_t list) {
     node_destroy(head);
     head = next;
   }
-  free(*list); // eh? I had expected to do 'free(list)' but that breaks shit that runs *after* this is done...
+  free(*list);
   list = NULL;
 }
 
 
-node_t *node_create(int value) {
+node_t *node_create(item value) {
   node_t *node = (node_t *)malloc(sizeof(node_t));
   node->content = value;
   return node;
@@ -93,6 +94,15 @@ void list_remove(list_t list, uint position) {
   
   node_destroy(node);
 
+}
+
+
+item get_item(list_t list, uint position) {
+  node_t *head = *list;
+  for (int i = 0; i < position; i++) {
+    head = head->next;
+  }
+  return head->content;
 }
 
 
@@ -176,6 +186,28 @@ void test_remove_single_element() {
 }
 
 
+void test_remove_multiple_element() {
+  /* list_t l = list_create(); */
+  /* list_t li = list_create(); */
+  /* list_t lis = list_create(); */
+  list_t list = list_create();
+  list_insert(list, 0, 1);
+  list_remove(list, 0);
+  assert(is_empty(list));
+}
+
+
+void test_get_item() {
+  list_t list = list_create();
+  list_insert(list, 0, 1);
+  list_insert(list, 1, 2);
+  list_insert(list, 2, 3);
+  assert(get_item(list, 0) == 1);
+  assert(get_item(list, 1) == 2);
+  assert(get_item(list, 2) == 3);
+}
+
+
 int main(int argc, char **argv) {
   test_create_empty_list();
   test_insert_first_element();
@@ -183,5 +215,7 @@ int main(int argc, char **argv) {
   test_insert_multiple_elements_back();
   test_insert_elements_mid();
   test_remove_single_element();
+  test_remove_multiple_element();
+  test_get_item();
   return 0;
 }
