@@ -6,12 +6,8 @@
 #include <string.h>
 
 
-// int MAXLEN = pow(2, sizeof(uint) * 8) - 1; // How to do this at comptime?
-
-typedef int item;
-
 struct node {
-  item content;
+  char *content;
   struct node *next;
 };
 
@@ -27,6 +23,7 @@ list_t list_create() {
 
 
 void node_destroy(node_t *node) {
+  free(node->content);
   node->next = NULL;
   free(node);
   node = NULL;
@@ -46,14 +43,16 @@ void list_destroy(list_t list) {
 }
 
 
-node_t *node_create(item value) {
-  node_t *node = (node_t *)malloc(sizeof(node_t));
-  node->content = value;
+node_t *node_create(char *value) {
+  char *val = malloc(strlen(value) * sizeof(char));
+  strcpy(val, value);
+  node_t *node = malloc(sizeof(node_t));
+  node->content = val;
   return node;
 }
 
 
-int list_insert(list_t list, uint position, int value) {
+int list_insert(list_t list, uint position, char *value) {
   node_t *new = node_create(value);
   node_t *before = NULL;
   node_t *after = *list;
@@ -98,7 +97,7 @@ void list_remove(list_t list, uint position) {
 }
 
 
-item get_item(list_t list, uint position) {
+char *get_item(list_t list, uint position) {
   node_t *head = *list;
   for (int i = 0; i < position; i++) {
     head = head->next;
@@ -133,8 +132,8 @@ void test_create_empty_list() {
 
 void test_insert_first_element() {
   list_t list = list_create();
-  list_insert(list, 0, 1);
-  assert((*list)->content == 1);
+  list_insert(list, 0, "1");
+  assert(strcmp((*list)->content, "1") == 0);
   assert(list_length(list) == 1);
   list_destroy(list);
 }
@@ -142,12 +141,12 @@ void test_insert_first_element() {
 
 void test_insert_multiple_elements_front() {
   list_t list = list_create();
-  list_insert(list, 0, 1);
-  list_insert(list, 0, 2);
-  list_insert(list, 0, 3);
-  assert((*list)->content == 3);
-  assert((*list)->next->content == 2);
-  assert((*list)->next->next->content == 1);
+  list_insert(list, 0, "1");
+  list_insert(list, 0, "2");
+  list_insert(list, 0, "3");
+  assert(strcmp((*list)->content, "3") == 0);
+  assert(strcmp((*list)->next->content, "2") == 0);
+  assert(strcmp((*list)->next->next->content, "1") == 0);
   assert(list_length(list) == 3);
   list_destroy(list);
 }
@@ -155,12 +154,12 @@ void test_insert_multiple_elements_front() {
 
 void test_insert_multiple_elements_back() {
   list_t list = list_create();
-  list_insert(list, 0, 1);
-  list_insert(list, 1, 2);
-  list_insert(list, 2, 3);
-  assert((*list)->content == 1);
-  assert((*list)->next->content == 2);
-  assert((*list)->next->next->content == 3);
+  list_insert(list, 0, "1");
+  list_insert(list, 1, "2");
+  list_insert(list, 2, "3");
+  assert(strcmp((*list)->content, "1") == 0);
+  assert(strcmp((*list)->next->content, "2") == 0);
+  assert(strcmp((*list)->next->next->content, "3") == 0);
   assert(list_length(list) == 3);
   list_destroy(list);
 }
@@ -168,16 +167,16 @@ void test_insert_multiple_elements_back() {
 
 void test_insert_elements_mid() {
   list_t list = list_create();
-  list_insert(list, 0, 1);
-  list_insert(list, 1, 2);
-  list_insert(list, 2, 4);
-  list_insert(list, 3, 5);
-  list_insert(list, 2, 3);
-  assert((*list)->content == 1);
-  assert((*list)->next->content == 2);
-  assert((*list)->next->next->content == 3);
-  assert((*list)->next->next->next->content == 4);
-  assert((*list)->next->next->next->next->content == 5);
+  list_insert(list, 0, "1");
+  list_insert(list, 1, "2");
+  list_insert(list, 2, "4");
+  list_insert(list, 3, "5");
+  list_insert(list, 2, "3");
+  assert(strcmp((*list)->content, "1") == 0);
+  assert(strcmp((*list)->next->content, "2") == 0);
+  assert(strcmp((*list)->next->next->content, "3") == 0);
+  assert(strcmp((*list)->next->next->next->content, "4") == 0);
+  assert(strcmp((*list)->next->next->next->next->content, "5") == 0);
   assert(list_length(list) == 5);
   list_destroy(list);
 }
@@ -185,7 +184,7 @@ void test_insert_elements_mid() {
 
 void test_remove_single_element() {
   list_t list = list_create();
-  list_insert(list, 0, 1);
+  list_insert(list, 0, "1");
   list_remove(list, 0);
   assert(is_empty(list));
   list_destroy(list);
@@ -194,26 +193,26 @@ void test_remove_single_element() {
 
 void test_get_item() {
   list_t list = list_create();
-  list_insert(list, 0, 1);
-  list_insert(list, 1, 2);
-  list_insert(list, 2, 3);
-  assert(get_item(list, 0) == 1);
-  assert(get_item(list, 1) == 2);
-  assert(get_item(list, 2) == 3);
+  list_insert(list, 0, "1");
+  list_insert(list, 1, "2");
+  list_insert(list, 2, "3");
+  assert(strcmp(get_item(list, 0), "1") == 0);
+  assert(strcmp(get_item(list, 1), "2") == 0);
+  assert(strcmp(get_item(list, 2), "3") == 0);
   list_destroy(list);
 }
 
 
 void test_remove_multiple_element() {
   list_t list = list_create();
-  list_insert(list, 0, 1);
-  list_insert(list, 1, 2);
-  list_insert(list, 2, 3);
-  list_insert(list, 3, 4);
-  list_insert(list, 4, 5);
+  list_insert(list, 0, "1");
+  list_insert(list, 1, "2");
+  list_insert(list, 2, "3");
+  list_insert(list, 3, "4");
+  list_insert(list, 4, "5");
   list_remove(list, 2);
   list_remove(list, 2);
-  assert(get_item(list, 2) == 5);
+  assert(strcmp(get_item(list, 2), "5") == 0);
   assert(list_length(list) == 3);
   list_destroy(list);
 }
