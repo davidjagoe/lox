@@ -24,10 +24,24 @@ list_t list_create() {
 }
 
 
-/* void list_destroy(node_t **list) { */
-/*   // HOLD for freeing nodes. */
-/*   /\* free(list); *\/ */
-/* } */
+void node_destroy(node_t *node) {
+  node->next = NULL;
+  free(node);
+  node = NULL;
+}
+
+
+void list_destroy(list_t list) {
+  node_t *head = *list;
+  node_t *next;
+  while (head) {
+    next = head->next;
+    node_destroy(head);
+    head = next;
+  }
+  free(*list); // eh? I had expected to do 'free(list)' but that breaks shit that runs *after* this is done...
+  list = NULL;
+}
 
 
 node_t *node_create(int value) {
@@ -60,6 +74,28 @@ int list_insert(list_t list, uint position, int value) {
 }
 
 
+void list_remove(list_t list, uint position) {
+  node_t *prev = NULL;
+  node_t *node = *list;
+
+  for (int i = 0; i < position; i++) {
+    prev = node;
+    node = node->next;
+  }
+
+  if (prev) {
+    prev->next = node->next;
+  }
+
+  if (position == 0) {
+    *list = node->next;
+  }
+  
+  node_destroy(node);
+
+}
+
+
 uint list_length(list_t list) {
   uint length = 0;
   node_t *head = *list;
@@ -80,6 +116,7 @@ void test_create_empty_list() {
   list_t empty = list_create();
   assert(is_empty(empty));
   assert(list_length(empty) == 0);
+  list_destroy(empty);
 }
 
 
@@ -103,9 +140,48 @@ void test_insert_multiple_elements_front() {
 }
 
 
+void test_insert_multiple_elements_back() {
+  list_t list = list_create();
+  list_insert(list, 0, 1);
+  list_insert(list, 1, 2);
+  list_insert(list, 2, 3);
+  assert((*list)->content == 1);
+  assert((*list)->next->content == 2);
+  assert((*list)->next->next->content == 3);
+  assert(list_length(list) == 3);
+}
+
+
+void test_insert_elements_mid() {
+  list_t list = list_create();
+  list_insert(list, 0, 1);
+  list_insert(list, 1, 2);
+  list_insert(list, 2, 4);
+  list_insert(list, 3, 5);
+  list_insert(list, 2, 3);
+  assert((*list)->content == 1);
+  assert((*list)->next->content == 2);
+  assert((*list)->next->next->content == 3);
+  assert((*list)->next->next->next->content == 4);
+  assert((*list)->next->next->next->next->content == 5);
+  assert(list_length(list) == 5);
+}
+
+
+void test_remove_single_element() {
+  list_t list = list_create();
+  list_insert(list, 0, 1);
+  list_remove(list, 0);
+  assert(is_empty(list));
+}
+
+
 int main(int argc, char **argv) {
   test_create_empty_list();
   test_insert_first_element();
   test_insert_multiple_elements_front();
+  test_insert_multiple_elements_back();
+  test_insert_elements_mid();
+  test_remove_single_element();
   return 0;
 }
