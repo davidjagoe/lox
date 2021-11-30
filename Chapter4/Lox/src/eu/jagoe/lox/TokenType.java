@@ -42,7 +42,7 @@ enum TokenType {
     PRINT,
     RETURN,
     SUPER,
-    THIS,
+    SELF,
     TRUE,
     VAR,
     WHILE,

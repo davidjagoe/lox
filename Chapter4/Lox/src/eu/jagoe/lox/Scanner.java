@@ -1,11 +1,10 @@
 package eu.jagoe.lox;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 
-import eu.jagoe.lox.TokenType;
 
 class Scanner {
     private final String source;
@@ -13,6 +12,27 @@ class Scanner {
     private int start;
     private int current;
     private int line;
+    private static final Map<String, TokenType> keywords;
+
+    static {
+        keywords = new HashMap<>();
+        keywords.put("and", TokenType.AND);
+        keywords.put("class", TokenType.CLASS);
+        keywords.put("else", TokenType.ELSE);
+        keywords.put("false", TokenType.FALSE);
+        keywords.put("fn", TokenType.FN);
+        keywords.put("for", TokenType.FOR);
+        keywords.put("if", TokenType.IF);
+        keywords.put("nil", TokenType.NIL);
+        keywords.put("or", TokenType.OR);
+        keywords.put("print", TokenType.PRINT);
+        keywords.put("return", TokenType.RETURN);
+        keywords.put("super", TokenType.SUPER);
+        keywords.put("self", TokenType.SELF);
+        keywords.put("true", TokenType.TRUE);
+        keywords.put("var", TokenType.VAR);
+        keywords.put("while", TokenType.WHILE);
+    }
 
     Scanner(String source) {
         this.source = source;
@@ -56,8 +76,12 @@ class Scanner {
         return c >= '0' && c <= '9';
     }
 
-    private boolean isLeadingIdentifierChar(char c) {
+    private boolean isAlpha(char c) {
         return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c == '_');
+    }
+
+    private boolean isAlphaNumeric(char c) {
+        return isAlpha(c) || isDigit(c);
     }
 
     private void scanToken() {
@@ -99,7 +123,7 @@ class Scanner {
 
             default:
                 if (isDigit(c)) { scanNumber(); break; }
-                if (isLeadingIdentifierChar(c)) { scanIdentifier(); break; }
+                if (isAlpha(c)) { scanIdentifier(); break; }
                 Lox.error(line, "Unexpected character."); break;
         }
     }
@@ -123,7 +147,11 @@ class Scanner {
     }
 
     private void scanIdentifier() {
-
+        while (isAlphaNumeric(peek())) advance();
+        String text = source.substring(start, current);
+        TokenType type = keywords.get(text);
+        if (type == null) type = TokenType.IDENTIFIER;
+        addToken(type);
     }
 
     private void addToken(TokenType type) {
