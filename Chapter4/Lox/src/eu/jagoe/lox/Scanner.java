@@ -56,6 +56,10 @@ class Scanner {
         return c >= '0' && c <= '9';
     }
 
+    private boolean isLeadingIdentifierChar(char c) {
+        return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c == '_');
+    }
+
     private void scanToken() {
         char c = advance();
         switch (c) {
@@ -95,6 +99,7 @@ class Scanner {
 
             default:
                 if (isDigit(c)) { scanNumber(); break; }
+                if (isLeadingIdentifierChar(c)) { scanIdentifier(); break; }
                 Lox.error(line, "Unexpected character."); break;
         }
     }
@@ -115,6 +120,10 @@ class Scanner {
         if (peek() == '.' && isDigit(peekNext())) advance();
         while (isDigit(peek())) advance();
         addToken(TokenType.NUMBER, Double.parseDouble(source.substring(start, current)));
+    }
+
+    private void scanIdentifier() {
+
     }
 
     private void addToken(TokenType type) {
